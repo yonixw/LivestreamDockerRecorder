@@ -15,6 +15,7 @@ TODO
     * rm /tmp/.X0-lock
     * rm /var/run/dbus/pid
     * rm ~/.config/obs-studio 
+* The VNC password is printed to stdout.. so docker logs should not be public
 
 # Hetzner QuickStart
 
