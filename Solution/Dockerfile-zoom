@@ -1,0 +1,10 @@
+FROM yonixw/obs-audio
+
+RUN apt update && apt install -y wget
+
+RUN wget https://zoom.us/client/latest/zoom_amd64.deb && \
+    apt install -y ./zoom_amd64.deb && \
+    rm -f ./zoom_amd64.deb
+
+RUN echo "?package(bash):needs=\"X11\" section=\"DockerCustom\" title=\"Zoom\" command=\"zoom\"" \
+     >> /usr/share/menu/custom-docker && update-menus

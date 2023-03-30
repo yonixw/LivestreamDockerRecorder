@@ -51,6 +51,8 @@ You should also be able to open the live broadcast from LINUX, but I haven't had
 
 Another disadvantage is that this is a very generic solution with no automation, so some problems go unattended. For example, how do you know when a YouTube broadcast has become stuck and you need to refresh the page? A browser add-on that refreshes every few minutes is the generic solution. With the disadvantage that if the refresh time is too short, it will interfere with the broadcast. But, if the refresh time is too long, you might miss something important on hangs!
 
+There are also some quirks special to this solution like making sure the OBS is in the forground during the recording, but it is insignificat relativly.
+
 ## What are the advantages of the solution?
 
 First and foremost, you can open any live broadcast you want. From YouTube to ZOOM and other sites.

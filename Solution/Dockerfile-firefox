@@ -1,0 +1,6 @@
+FROM yonixw/obs-audio
+
+RUN apt update && apt install -y firefox
+
+RUN echo "?package(bash):needs=\"X11\" section=\"DockerCustom\" title=\"Firefox\" command=\"firefox\"" \
+     >> /usr/share/menu/custom-docker && update-menus

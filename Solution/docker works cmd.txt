@@ -1,0 +1,41 @@
+docker run --rm --shm-size=256m -e VNC_PASSWD=123456  -it -p 5901:5901 bandi13/docker-obs
+
+
+apt update
+apt install firefox
+apt install nano
+
+apt-get install -y pulseaudio socat alsa-utils ffmpeg
+
+adduser root audio
+
+mkdir -p /var/run/dbus
+dbus-uuidgen > /var/lib/dbus/machine-id
+dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address
+
+pulseaudio -vvv --exit-idle-time=-1 --system //(D)
+
+firefox
+
+
+alsa
+alsa-info 
+alsactl
+alsactl -L store
+alsamixer 
+alsa-info
+
+pacl list short cards
+pactl list short cards
+pactl list 
+
+nano /etc/pulse/system.pa # add .... ls /usr/lib/pulse-11.1/modules/ # native-protocol-unix auth-anonymous=1
+
+
+=====================
+
+docker run --shm-size=256m -e VNC_PASSWD=123456  -it -p 5901:5901 obs-firefox-vnc-sound
+
+rm /tmp/.X0-lock
+rm /var/run/dbus/pid
+rm ~/.config/obs-studio 
