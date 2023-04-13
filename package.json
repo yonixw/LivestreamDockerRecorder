@@ -1,0 +1,11 @@
+{
+  "name": "LivestreamDockerRecorder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/yonixw/LivestreamDockerRecorder.git",
+  "author": "Yoni Water Man <yonixw@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "bash .gitlab-ci-local-setup.sh"
+  }
+}

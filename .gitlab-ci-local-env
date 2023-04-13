@@ -1,0 +1,6 @@
+# FROM: https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-in-docker-build/.gitlab-ci-local-env
+PRIVILEGED=true
+VOLUME=certs:/certs/client
+VARIABLE="DOCKER_TLS_CERTDIR=/certs; X=Y"
+# Always runs needed jobs, when gitlab-ci-local <job-name> is called
+NEEDS=true # --needs

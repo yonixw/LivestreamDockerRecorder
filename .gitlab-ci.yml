@@ -1,0 +1,13 @@
+---
+# @Description Build alpine
+alpine-image:
+  services:
+    - docker:dind
+  needs: []
+  image: docker:stable
+  stage: build
+  script:
+    - printenv
+    - ls -all /certs/client
+    - ls .
+    - pwd
