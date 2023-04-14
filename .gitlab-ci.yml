@@ -38,21 +38,43 @@ terraform:
     paths:
       - ./artifacts/*
 
+getkey:
+  # A (empty) task for local dev that:
+  # reads artifacts (because declaring them, give access to files)
+  # and expose to other task (if they depend on us + need us)
+  stage: build
+  artifacts:
+    expire_in: 24 hour # default is 30days
+    paths:
+      - ./artifacts/*
+  script:
+    - ls -la artifacts
+
 ansible:
   image: alpinelinux/ansible
-  stage: deploy
-  #dependencies:
-  #  - "sshgen"
+  stage: build
+  dependencies:
+    - "getkey"
+    - "sshgen"
+    - "terraform"
+  needs:
+    - "getkey"
+    - "sshgen"
+    - "terraform"
   script:
-    - export IP=$(cat ./artifacts/vm_ip.txt)
-    - echo IP=$IP
-    - echo ANSIBLE_IMAGE=$ANSIBLE_IMAGE
+    - export IP=$(cat ./artifacts/vm_ip.txt) && echo IP=$IP
     - cd jobs/2ansible-containers
-    - echo VNC_PASSWD=$(date +%s | sha256sum | base64 | head -c 32 ; echo) > .remote.env
-    - cat .remote.env
-    - cat docker-compose.tmpl.yml |  sed -e "s|var_image|$ANSIBLE_IMAGE|g"  > ./docker-compose.yml
+    # Prepare what needed:
+    - touch output.txt && bash local_prepare.sh
+    # Add ip, otherwise only localhost allowed
+    - mkdir -p /etc/ansible && echo $IP >> /etc/ansible/hosts
+    # Ignore Host key checking (new key..)
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    # Playbook with our ip as target
     - ansible --version
-    - ansible-playbook all -u root --private-key "../../artifacts/key" playbook.yml --extra-vars "target_ip=$IP" --list-hosts
+    - ansible-playbook playbook.yml -u root --private-key "../../artifacts/key" --extra-vars "target_ip=$IP"
+    # Cat output:
+    - cat output.txt
 #
 # See examples:
 # https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml

@@ -15,20 +15,26 @@
         state: directory
         path: /src/app
 
-    - name: Copy .env from gitlab job
+    - name: Copy files after local_prepate.sh
       ansible.builtin.copy:
-        src: ./.remote.env
-        dest: /src/app/.env
+        src: "./{{item.src}}"
+        dest: "/src/app/{{item.dest}}"
         follow: no # follow links
-
-    - name: Copy docker-compose (assumes image replace)
-      ansible.builtin.copy:
-        src: ./docker-compose.yml
-        dest: /src/app/docker-compose.yml
-        follow: no # follow links
+      loop:
+        - src: .remote.env
+          dest: .env
+        - src: docker-compose.yml
+          dest: docker-compose.yml
 
     - name: Find all files
       ansible.builtin.find:
         paths: /src/app
         recurse: yes
         age: 2d
+      register: output
+
+    - name: Run `docker-compose up`
+      community.docker.docker_compose:
+        project_src: /src/app
+        build: false
+      register: output
