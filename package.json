@@ -9,6 +9,6 @@
     "start": "bash .gitlab-ci-local-setup.sh",
     "terraform": "gitlab-ci-local terraform --variable TF_VAR_hcloud_token=$HT",
     "ansible": "gitlab-ci-local ansible",
-    "all": "gitlab-ci-local --variable TF_VAR_hcloud_token=$HT"
+    "all": "gitlab-ci-local --variable TF_VAR_hcloud_token=$HT --variable ANSIBLE_IMAGE=${VNC_IMAGE:-yonixw/obs-audio-firefox}"
   }
 }
