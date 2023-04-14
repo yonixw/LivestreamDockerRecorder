@@ -6,9 +6,10 @@
   tasks:
     - name: Wait for VM to become reachable
       ansible.builtin.wait_for_connection:
-        timeout: 600 #10min
-        delay: 30 #wait before checking
+        delay: 15 #wait before checking
+        connect_timeout: 10 # single check timeout in seconds
         sleep: 5 #sleep between checks
+        timeout: 600 # total timeout 10min
 
     - name: Gather facts for first time
       ansible.builtin.setup:
