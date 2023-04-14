@@ -32,7 +32,7 @@ variable "ssh_deploy_pub_path" {
 
 variable "ssh_shared_fingerprint" {
   type = string
-  default = "52:c4:a4:13:f1:a4:5b:20:bd:47:31:28:12:5b:dd:64" #md5 fingerprint
+  default = "1c:0f:d6:55:94:06:50:cc:54:d4:fe:12:b1:cd:8d:d3" #md5 fingerprint
 }
 
 variable "vm_image" {

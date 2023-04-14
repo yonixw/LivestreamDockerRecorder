@@ -4,15 +4,15 @@ sshgen:
   image: ubuntu
   script:
     - apt update && apt install -y openssh-client
-    - rm -f ./key && rm -f ./key.pub
-    - ssh-keygen -f ./key -t rsa -b 4096 -q -N "" -C "" # -N is pass -C is username
+    - mkdir -p ./artifacts
+    - rm -f ./artifacts/key && rm -f ./artifacts/key.pub
+    - ssh-keygen -f ./artifacts/key -t rsa -b 4096 -q -N "" -C "" # -N is pass -C is username
     - ls -la && pwd
-    - echo DEBUG && cat ./key
+    - echo DEBUG && cat ./artifacts/key
   artifacts:
-    expire_in: 1 hour # default is 30days
+    expire_in: 24 hour # default is 30days
     paths:
-      - ./key.pub
-      - ./key
+      - ./artifacts/*
 
 terraform:
   image:
@@ -26,12 +26,18 @@ terraform:
   script:
     - printenv
     - export TF_VAR_prefix=$(date +"dt%Y%m%dts%H%Mr$RANDOM")
-    - export TF_VAR_ssh_deploy_pub_path=../../key.pub
+    - export TF_VAR_ssh_deploy_pub_path=../../artifacts/key.pub
     - echo prefix=$TF_VAR_prefix
     - cd jobs/1terraform-hetzner
     - terraform init
     - terraform plan
     - terraform apply -auto-approve
+    - terraform output -raw ip > ../../artifacts/vm_ip.txt && echo ./artifacts/vm_ip.txt
+  #    - terraform destroy -auto-approve --target hcloud_ssh_key.ssh_deploy
+  artifacts:
+    expire_in: 24 hour # default is 30days
+    paths:
+      - ./artifacts/*
 #
 # See examples:
 # https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml

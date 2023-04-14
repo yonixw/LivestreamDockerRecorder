@@ -51,7 +51,6 @@ resource "hcloud_server" "server_main" {
   public_net {
     ipv4_enabled = true
     ipv4 = hcloud_primary_ip.ip_main.id
-
     ipv6_enabled = false
   }
 
@@ -62,8 +61,8 @@ resource "hcloud_server" "server_main" {
 
   depends_on = [
     hcloud_primary_ip.ip_main,
-    hcloud_ssh_key.ssh_deploy,
   ]
+
 }
 
 
