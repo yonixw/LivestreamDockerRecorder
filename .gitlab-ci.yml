@@ -11,3 +11,26 @@ alpine-image:
     - ls -all /certs/client
     - ls .
     - pwd
+
+base-terraform-image:
+  services:
+    - docker:dind
+  needs: []
+  image: docker:stable
+  stage: build
+  script:
+    - ls && pwd
+    - cd jobs/1terraform-hetzner
+    - docker build -t base-terraform-image .
+
+terraform:
+  image: base-terraform-image
+  needs: ["base-terraform-image"]
+  stage: build
+  script:
+    - cd jobs/1terraform-hetzner
+    - init
+    - plan
+#
+# See examples:
+# https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml
