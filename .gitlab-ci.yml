@@ -24,7 +24,6 @@ terraform:
   dependencies:
     - "sshgen"
   script:
-    - printenv
     - export TF_VAR_prefix=$(date +"dt%Y%m%dts%H%Mr$RANDOM")
     - export TF_VAR_ssh_deploy_pub_path=../../artifacts/key.pub
     - echo prefix=$TF_VAR_prefix
@@ -38,6 +37,22 @@ terraform:
     expire_in: 24 hour # default is 30days
     paths:
       - ./artifacts/*
+
+ansible:
+  image: alpinelinux/ansible
+  stage: deploy
+  #dependencies:
+  #  - "sshgen"
+  script:
+    - export IP=$(cat ./artifacts/vm_ip.txt)
+    - echo IP=$IP
+    - echo ANSIBLE_IMAGE=$ANSIBLE_IMAGE
+    - cd jobs/2ansible-containers
+    - echo VNC_PASSWD=$(date +%s | sha256sum | base64 | head -c 32 ; echo) > .remote.env
+    - cat .remote.env
+    - cat docker-compose.tmpl.yml |  sed -e "s|var_image|$ANSIBLE_IMAGE|g"  > ./docker-compose.yml
+    - ansible --version
+    - ansible-playbook all -u root --private-key "../../artifacts/key" playbook.yml --extra-vars "target_ip=$IP" --list-hosts
 #
 # See examples:
 # https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml

@@ -1,0 +1,34 @@
+---
+- name: Set up docker-compose machine
+  hosts: "{{ target_ip }}"
+  remote_user: root
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        update_cache: yes
+        pkg:
+          - docker
+          - docker-compose
+
+    - name: Creates directory
+      file:
+        state: directory
+        path: /src/app
+
+    - name: Copy .env from gitlab job
+      ansible.builtin.copy:
+        src: ./.remote.env
+        dest: /src/app/.env
+        follow: no # follow links
+
+    - name: Copy docker-compose (assumes image replace)
+      ansible.builtin.copy:
+        src: ./docker-compose.yml
+        dest: /src/app/docker-compose.yml
+        follow: no # follow links
+
+    - name: Find all files
+      ansible.builtin.find:
+        paths: /src/app
+        recurse: yes
+        age: 2d

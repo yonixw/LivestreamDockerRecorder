@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "bash .gitlab-ci-local-setup.sh",
-    "terraform": "reset && gitlab-ci-local terraform --variable TF_VAR_hcloud_token=$HT"
+    "terraform": "reset && gitlab-ci-local terraform --variable TF_VAR_hcloud_token=$HT",
+    "ansible": "reset && gitlab-ci-local ansible"
   }
 }

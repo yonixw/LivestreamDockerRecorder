@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  recorder:
+    image: var_image
+    ports:
+      - "15901:5901"
+    env_file: .env #VNC_PASSWD=...
+    volumes:
+      - ./recorder:/root
+      - ./files:/files:ro
