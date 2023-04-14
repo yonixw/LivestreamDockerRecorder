@@ -12,4 +12,4 @@ cat docker-compose.tmpl.yml |  sed -e "s|var_image|$ANSIBLE_IMAGE|g"  \
 
 
 # Prepare url to echo later:
-echo "http://$IP:15901/?password=$PASS > output.txt
+echo "http://$IP:15901/?password=$PASS" > output.txt

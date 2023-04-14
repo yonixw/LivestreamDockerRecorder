@@ -2,7 +2,17 @@
 - name: Set up docker-compose machine
   hosts: "{{ target_ip }}"
   remote_user: root
+  gather_facts: false # Only after we wait for connection, "setup" bellow
   tasks:
+    - name: Wait for VM to become reachable
+      ansible.builtin.wait_for_connection:
+        timeout: 600 #10min
+        delay: 30 #wait before checking
+        sleep: 5 #sleep between checks
+
+    - name: Gather facts for first time
+      ansible.builtin.setup:
+
     - name: Install packages
       ansible.builtin.apt:
         update_cache: yes
@@ -34,7 +44,7 @@
       register: output
 
     - name: Run `docker-compose up`
-      community.docker.docker_compose:
+      docker_compose:
         project_src: /src/app
         build: false
       register: output

@@ -8,7 +8,6 @@ sshgen:
     - rm -f ./artifacts/key && rm -f ./artifacts/key.pub
     - ssh-keygen -f ./artifacts/key -t rsa -b 4096 -q -N "" -C "" # -N is pass -C is username
     - ls -la && pwd
-    - echo DEBUG && cat ./artifacts/key
   artifacts:
     expire_in: 24 hour # default is 30days
     paths:
@@ -54,18 +53,18 @@ ansible:
   image: alpinelinux/ansible
   stage: build
   dependencies:
-    - "getkey"
+    #- "getkey" # get artifact if exist w.o. running dependant
     - "sshgen"
     - "terraform"
   needs:
-    - "getkey"
+    #- "getkey" # get artifact if exist w.o. running dependant
     - "sshgen"
     - "terraform"
   script:
     - export IP=$(cat ./artifacts/vm_ip.txt) && echo IP=$IP
     - cd jobs/2ansible-containers
     # Prepare what needed:
-    - touch output.txt && bash local_prepare.sh
+    - touch output.txt && sh local_prepare.sh
     # Add ip, otherwise only localhost allowed
     - mkdir -p /etc/ansible && echo $IP >> /etc/ansible/hosts
     # Ignore Host key checking (new key..)
