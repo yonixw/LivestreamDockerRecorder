@@ -6,6 +6,7 @@
   "author": "Yoni Water Man <yonixw@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "bash .gitlab-ci-local-setup.sh"
+    "start": "bash .gitlab-ci-local-setup.sh",
+    "terraform": "reset && gitlab-ci-local terraform --variable TF_VAR_hcloud_token=$HT"
   }
 }

@@ -16,9 +16,9 @@ resource "hcloud_primary_ip" "ip_main" {
     )
 }
 
-resource "hcloud_ssh_key" "ssh_main" {
-   name       = "${var.prefix}_ssh_main"
-   public_key = file("${var.pub_path}")
+resource "hcloud_ssh_key" "ssh_deploy" {
+   name       = "${var.prefix}_ssh_deploy"
+   public_key = file("${var.ssh_deploy_pub_path}")
    labels =  merge(
         {
             Resource = "SSH_KEY",
@@ -29,25 +29,12 @@ resource "hcloud_ssh_key" "ssh_main" {
     )
 }
 
-resource "hcloud_volume" "volume_main" {
-  name      = "${var.prefix}_volume_main"
-  size      = 60
-  server_id = hcloud_server.server_main.id
-  automount = true
-  format    = "ext4"
-  
-   labels =  merge(
-        {
-            Resource = "Volume",
-            Provisioner = "Terraform",
-            Prefix = "${var.prefix}"
-        },
-        var.tags
-    )
+data "hcloud_ssh_key" "ssh_shared" {
+  fingerprint = "${var.ssh_shared_fingerprint}"
 }
 
 resource "hcloud_server" "server_main" {
-  name        = "${var.prefix}_server"
+  name        = "${var.prefix}-server" # No underscore!
   datacenter  = "${var.htz_datacenter}" 
   image       = "${var.vm_image}"
   server_type = "${var.vm_type}"
@@ -69,12 +56,13 @@ resource "hcloud_server" "server_main" {
   }
 
   ssh_keys = [
-    hcloud_ssh_key.ssh_main.id
+    data.hcloud_ssh_key.ssh_shared.id, # shared used for debug for all deploys
+    hcloud_ssh_key.ssh_deploy.id # temp used for deploy only
   ]
 
   depends_on = [
     hcloud_primary_ip.ip_main,
-    hcloud_ssh_key.ssh_main,
+    hcloud_ssh_key.ssh_deploy,
   ]
 }
 

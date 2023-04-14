@@ -2,8 +2,8 @@
 PRIVILEGED=true
 VOLUME=certs:/certs/client
 
-# Space delimited:
-VARIABLE="DOCKER_TLS_CERTDIR=/certs X=Y TF_VAR_hcloud_token=$HT"
+# Space delimited (for SECRETS, run cli: --variable X=$Y)
+VARIABLE="DOCKER_TLS_CERTDIR=/certs X=Y"
 
 # Always runs needed jobs, when gitlab-ci-local <job-name> is called
 NEEDS=true # --needs

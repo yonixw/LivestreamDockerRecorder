@@ -1,36 +1,50 @@
 ---
-# @Description Build alpine
-alpine-image:
-  services:
-    - docker:dind
-  needs: []
-  image: docker:stable
+sshgen:
   stage: build
+  image: ubuntu
   script:
-    - printenv
-    - ls -all /certs/client
-    - ls .
-    - pwd
-
-base-terraform-image:
-  services:
-    - docker:dind
-  needs: []
-  image: docker:stable
-  stage: build
-  script:
-    - ls && pwd
-    - cd jobs/1terraform-hetzner
-    - docker build -t base-terraform-image .
+    - apt update && apt install -y openssh-client
+    - rm -f ./key && rm -f ./key.pub
+    - ssh-keygen -f ./key -t rsa -b 4096 -q -N "" -C "" # -N is pass -C is username
+    - ls -la && pwd
+    - echo DEBUG && cat ./key
+  artifacts:
+    expire_in: 1 hour # default is 30days
+    paths:
+      - ./key.pub
+      - ./key
 
 terraform:
-  image: base-terraform-image
-  needs: ["base-terraform-image"]
+  image:
+    name: hashicorp/terraform
+    entrypoint: ["/bin/sh", "-lc"]
   stage: build
+  needs:
+    - "sshgen"
+  dependencies:
+    - "sshgen"
   script:
+    - printenv
+    - export TF_VAR_prefix=$(date +"dt%Y%m%dts%H%Mr$RANDOM")
+    - export TF_VAR_ssh_deploy_pub_path=../../key.pub
+    - echo prefix=$TF_VAR_prefix
     - cd jobs/1terraform-hetzner
-    - init
-    - plan
+    - terraform init
+    - terraform plan
+    - terraform apply -auto-approve
 #
 # See examples:
 # https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml
+
+### @Description Build alpine
+##alpine-image:
+##  services:
+##    - docker:dind
+##  needs: []
+##  image: docker:stable
+##  stage: build
+##  script:
+##    - printenv
+##    - ls -all /certs/client
+##    - ls .
+##    - pwd

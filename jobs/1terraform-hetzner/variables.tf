@@ -26,8 +26,13 @@ variable "tags" {
     type = map(string)
 }
 
-variable "pub_path" {
+variable "ssh_deploy_pub_path" {
   type = string
+}
+
+variable "ssh_shared_fingerprint" {
+  type = string
+  default = "52:c4:a4:13:f1:a4:5b:20:bd:47:31:28:12:5b:dd:64" #md5 fingerprint
 }
 
 variable "vm_image" {
