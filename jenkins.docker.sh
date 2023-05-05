@@ -9,11 +9,20 @@
 # How to add jenkings plugins with custom docker
 # https://github.com/jenkinsci/jenkinsfile-runner/blob/main/docs/using/EXTENDING_DOCKER.adoc
 
+# Examples:
+# https://github.com/jenkinsci/jenkinsfile-runner/tree/main/demo
+
 # Docker wants a jenkins file in:
 # /workspace/Jenkinsfile
 
+#todo:
+# stage+timestamp label
+# mask pass
+# share files? share env?
+# Hide pre pipeline stuff until "Started" but show a WARN for it...
+
 DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:latest
-JAVA_OPTS=-Xms256m
+JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=false"
 USER_INPUT=0
 
 sanity () {
@@ -71,8 +80,8 @@ lint () {
 }
 
 run () {
-   # No verb = run
-   base
+   # No verb = run, but pass flags (-a = params)
+   base $@
 }
 
 runfile () {
@@ -104,7 +113,7 @@ if [ "$1" = "sanity" ]; then sanity $@; exit $? ; fi
 if [ "$1" = "bash" ]; then bash $@; exit $? ; fi
 
 if [ "$1" = "lint" ]; then lint $@; exit $? ; fi
-if [ "$1" = "run" ]; then run $@; exit $? ; fi
+if [ "$1" = "run" ]; then run  ${@: 2}; exit $? ; fi
 
 if [ "$1" = "cli" ]; then cli $@; exit $? ; fi
 if [ "$1" = "info" ]; then info; exit $? ; fi
@@ -119,6 +128,9 @@ echo "How to run:"
 echo -e "\tbash jenkins.docker.sh <verb> <params>"
 echo ""
 echo "Verbs:"
-echo -e "\t\033[1m sanity, bash, lint, run, cli, info \033[0m\n\t\t No params"
-echo -e "\t\033[1m runfile\033[0m\n\t\t --file|-f /workspace/<relative to pwd>"
-echo -e "\t\033[1m lintfile\033[0m\n\t\t --file|-f /workspace/<relative to pwd>"
+echo -e "\t\033[1m sanity, bash, lint, run, cli, info \033[0m"
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m runfile\033[0m"
+echo -e "\t\t --file|-f /workspace/<relative to pwd>"
+echo -e "\t\033[1m lintfile\033[0m"
+echo -e "\t\t --file|-f /workspace/<relative to pwd>"
