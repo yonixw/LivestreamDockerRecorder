@@ -14,6 +14,7 @@
 
 DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:latest
 JAVA_OPTS=-Xms256m
+USER_INPUT=0
 
 sanity () {
     docker run --rm \
@@ -38,23 +39,35 @@ bash () {
 }
 
 base () {
-    echo "Params: $@"
-    docker run --rm \
-        -e "JAVA_OPTS=$JAVA_OPTS" \
-        -v "$(pwd):/workspace" \
-        $DOCKER_IMAGE version
-    docker run --rm \
-        -e "JAVA_OPTS=$JAVA_OPTS" \
-        -v "$(pwd):/workspace" \
-        --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-        $DOCKER_IMAGE $@
+    if [ $USER_INPUT -eq 0 ]
+    then
+        docker run --rm \
+            -e "JAVA_OPTS=$JAVA_OPTS" \
+            -v "$(pwd):/workspace" \
+            -i \
+            --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
+            $DOCKER_IMAGE $@
+    else
+        docker run --rm \
+            -it \
+            -e "JAVA_OPTS=$JAVA_OPTS" \
+            -v "$(pwd):/workspace" \
+            --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
+            $DOCKER_IMAGE $@
+    fi
 }
 
-lint () {
+
+
+lintfile () {
     # [05.05.23] For some reason, a verb (lint, run) clear flags, so we set them again.
     base lint --jenkins-war /app/jenkins \
     --plugins /usr/share/jenkins/ref/plugins \
-    --file /workspace/Jenkinsfile 
+    $@
+}
+
+lint () {
+    lintfile --file /workspace/Jenkinsfile 
 }
 
 run () {
@@ -70,19 +83,42 @@ runfile () {
     $@
 }
 
+cli () {
+    # Version, list-plugins
+    USER_INPUT=1
+    base --cli
+    USER_INPUT=0
+}
+
+info () {
+    echo "[*] Runner version:"
+    base version
+    echo "[*] Jenkins version and plugins:"
+    echo -e "version\nlist-plugins" | base --cli 2>&1 \
+        | grep -E "^([a-z]|\s+>)" | grep -v "bye" # hide cli warnings
+}
+
+echo "[*] Params: $@"
+
 if [ "$1" = "sanity" ]; then sanity $@; exit $? ; fi
 if [ "$1" = "bash" ]; then bash $@; exit $? ; fi
 
 if [ "$1" = "lint" ]; then lint $@; exit $? ; fi
 if [ "$1" = "run" ]; then run $@; exit $? ; fi
 
-# runfile expect --file relative to "pwd"
+if [ "$1" = "cli" ]; then cli $@; exit $? ; fi
+if [ "$1" = "info" ]; then info; exit $? ; fi
+
+# runfile expect --file relative to "pwd", we skip 2 params 
+#    (https://stackoverflow.com/a/62630975/1997873)
 if [ "$1" = "runfile" ]; then runfile ${@: 2}; exit $? ; fi
+if [ "$1" = "lintfile" ]; then lintfile ${@: 2}; exit $? ; fi
 
 
 echo "How to run:"
 echo -e "\tbash jenkins.docker.sh <verb> <params>"
 echo ""
 echo "Verbs:"
-echo -e "\tsanity, bash, lint, run\n\t\tNo params"
-echo -e "\trunfile\n\t\t--file /workspace/<relative to pwd>"
+echo -e "\t\033[1m sanity, bash, lint, run, cli, info \033[0m\n\t\t No params"
+echo -e "\t\033[1m runfile\033[0m\n\t\t --file|-f /workspace/<relative to pwd>"
+echo -e "\t\033[1m lintfile\033[0m\n\t\t --file|-f /workspace/<relative to pwd>"
