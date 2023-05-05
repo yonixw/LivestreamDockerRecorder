@@ -16,6 +16,7 @@
 # /workspace/Jenkinsfile
 
 #todo:
+# docker agent for stage
 # stage+timestamp label
 # mask pass
 # share files? share env?
