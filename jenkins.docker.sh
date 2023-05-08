@@ -18,6 +18,8 @@
 #todo:
 # user script to add to custom docker
 # move all $ref to ./Jenkins/ for housekeeping
+# fix dind bug with same name share: https://github.com/jenkinsci/docker/issues/626#issuecomment-358331311
+# how to create local docker from latest version of jenkins, or from a specifiec one?
 
 # stage+timestamp label
 # mask pass
