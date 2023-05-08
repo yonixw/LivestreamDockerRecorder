@@ -17,12 +17,14 @@
 
 #todo:
 # docker agent for stage
+#     plugins
 # stage+timestamp label
 # mask pass
 # share files? share env?
 # Hide pre pipeline stuff until "Started" but show a WARN for it...
 
-DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:latest
+#DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:latest
+DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:jre-11-alpine@sha256:0732b0fcb3782813e2c7c31fde7a28c3099b968cbc9a01170e13075a17a9834f # 1.0-beta-32-SNAPSHOT
 JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=false"
 USER_INPUT=0
 
