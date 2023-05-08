@@ -16,8 +16,9 @@
 # /workspace/Jenkinsfile
 
 #todo:
-# docker agent for stage
-#     plugins
+# user script to add to custom docker
+# move all $ref to ./Jenkins/ for housekeeping
+
 # stage+timestamp label
 # mask pass
 # share files? share env?
@@ -57,6 +58,8 @@ pull () {
 }
 
 addplugins () {
+    verify_local_image
+
     tmpfile=$(mktemp Dockerfile.jfr-plugins.XXXXXX)
     echo "JFR Add plugin started.. using $tmpfile"
     cat >$tmpfile <<EOF
@@ -72,8 +75,14 @@ FROM $LOCAL_DOCKER_IMAGE
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 COPY --from=helper /app/jenkins/jenkins.war /app/jenkins/jenkins.war
 
+# add apt:
+RUN apt update && apt install -y docker.io
+#TODO: replace with user script
+
 # Update plugins:
 RUN java -jar /app/bin/jenkins-plugin-manager.jar \\
+    --list \\
+    --jenkins-version "\$(cat /app/jenkins/META-INF/MANIFEST.MF | grep Jenkins-Version | grep -oE "[0-9]+(\.[0-9]+)+")" \\
     --war /app/jenkins/jenkins.war \\
     --plugin-file /usr/share/jenkins/ref/plugins.txt \\
     && rm /app/jenkins/jenkins.war
@@ -115,16 +124,17 @@ base () {
         docker run --rm \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
-            -i \
+            -v /var/run/docker.sock:/var/run/docker.sock \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-            $LOCAL_DOCKER_IMAGE $@
+            $LOCAL_DOCKER_IMAGE $@ 2>&1 | grep -v WARNING
     else
         docker run --rm \
             -it \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
+            -v /var/run/docker.sock:/var/run/docker.sock \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-            $LOCAL_DOCKER_IMAGE $@
+            $LOCAL_DOCKER_IMAGE $@ 2>&1 | grep -v WARNING
     fi
 }
 
@@ -202,5 +212,6 @@ echo -e "\t\033[1m lintfile\033[0m"
 echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
 echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd>"
 echo -e "\t\033[1m addplugins\033[0m"
-echo -e "\t\t need ./plugins.txt with {id}:{version} like slack:latest"
+echo -e "\t\t need ./plugins.txt with {id}:{version} like slack:2.49"
 echo -e "\t\t see https://updates.jenkins-ci.org/download/plugins/"
+echo -e "\t\t but make sure it compatible with docker version"

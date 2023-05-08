@@ -1,1 +1,5 @@
-slack:latest
+slack:2.49
+docker-plugin:1.3.0
+docker-commons:1.21
+docker-workflow:1.29
+configuration-as-code:1512.vb_79d418d5fc8
