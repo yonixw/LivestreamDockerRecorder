@@ -29,5 +29,14 @@ pipeline {
                 echo "Password: ${params.PASSWORD}"
             }
         }
+        stage('Example Docker') {
+            agent {
+                 docker { image 'node:18.16.0-alpine' }
+            }
+            steps {
+                sh 'ls -la /'
+                sh 'node -v'
+            }
+        }
     }
 }

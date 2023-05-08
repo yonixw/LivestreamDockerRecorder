@@ -23,8 +23,9 @@
 # share files? share env?
 # Hide pre pipeline stuff until "Started" but show a WARN for it...
 
+
 #DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:latest
-DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:jre-11-alpine@sha256:0732b0fcb3782813e2c7c31fde7a28c3099b968cbc9a01170e13075a17a9834f # 1.0-beta-32-SNAPSHOT
+DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:jre-11@sha256:72ff68c1c368220eb4953a562de3f545404fb5b8c529157b9d6915b90b2c750e # 1.0-beta-32-SNAPSHOT
 JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=false"
 USER_INPUT=0
 
@@ -113,7 +114,7 @@ info () {
 echo "[*] Params: $@"
 
 if [ "$1" = "sanity" ]; then sanity $@; exit $? ; fi
-if [ "$1" = "bash" ]; then bash $@; exit $? ; fi
+if [ "$1" = "bash" ]; then bash; exit $? ; fi
 
 if [ "$1" = "lint" ]; then lint $@; exit $? ; fi
 if [ "$1" = "run" ]; then run  ${@: 2}; exit $? ; fi
@@ -134,6 +135,8 @@ echo "Verbs:"
 echo -e "\t\033[1m sanity, bash, lint, run, cli, info \033[0m"
 echo -e "\t\t (No params)"
 echo -e "\t\033[1m runfile\033[0m"
-echo -e "\t\t --file|-f /workspace/<relative to pwd>"
+echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
+echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd>"
 echo -e "\t\033[1m lintfile\033[0m"
-echo -e "\t\t --file|-f /workspace/<relative to pwd>"
+echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
+echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd>"
