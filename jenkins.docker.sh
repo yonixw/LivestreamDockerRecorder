@@ -36,7 +36,7 @@ JDK_HELPER_TAG=11-jdk@sha256:9de4aabba13e1dd532283497f98eff7bc89c2a158075f0021d5
 LOCAL_DOCKER_IMAGE=local_jfr$LOCAL_JFR_TAG
 
 # Java options to pass to environment
-JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=false"
+JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=false -Dorg.jenkinsci.plugins.durabletask.BourneShellScript.LAUNCH_DIAGNOSTICS=true"
 
 # Inner Flag if to pass `-t` to docker run
 USER_INPUT=0
