@@ -31,6 +31,8 @@ pipeline {
             }
         }
         stage('Example Docker') {
+            // how to debug: 
+            // https://stackoverflow.com/a/63490535/1997873
             agent {
                  docker { image 'node:18.16.0-alpine' }
             }
