@@ -23,11 +23,67 @@
 # share files? share env?
 # Hide pre pipeline stuff until "Started" but show a WARN for it...
 
+# Jenkins File Runner
+JFR_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner
+JFR_TAG=jre-11@sha256:72ff68c1c368220eb4953a562de3f545404fb5b8c529157b9d6915b90b2c750e # 1.0-beta-32-SNAPSHOT
 
-#DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:latest
-DOCKER_IMAGE=ghcr.io/jenkinsci/jenkinsfile-runner:jre-11@sha256:72ff68c1c368220eb4953a562de3f545404fb5b8c529157b9d6915b90b2c750e # 1.0-beta-32-SNAPSHOT
+# JDK helper Image (as JFR not always contain all tools)
+JDK_HELPER_IMAGE=eclipse-temurin
+JDK_HELPER_TAG=11-jdk@sha256:9de4aabba13e1dd532283497f98eff7bc89c2a158075f0021d536058d3f5a082
+
+# Local tag to hold latest or plugin built image
+LOCAL_DOCKER_IMAGE=local_jfr$LOCAL_JFR_TAG
+
+# Java options to pass to environment
 JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=false"
+
+# Inner Flag if to pass `-t` to docker run
 USER_INPUT=0
+
+verify_local_image() {
+    docker images --format "{{.Repository}}:{{.Tag}}" | grep $LOCAL_DOCKER_IMAGE > /dev/null
+    if [ $? -ne 0 ]
+    then
+        echo "ERR: No local image found! please run pull/addplugins verb before"
+        exit 1;
+    fi
+}
+
+pull () {
+    echo "JFR Pull start..."
+    docker pull $JFR_IMAGE:$JFR_TAG
+    docker tag $JFR_IMAGE:$JFR_TAG $LOCAL_DOCKER_IMAGE
+    echo "JFR Pull done!"
+}
+
+addplugins () {
+    tmpfile=$(mktemp Dockerfile.jfr-plugins.XXXXXX)
+    echo "JFR Add plugin started.. using $tmpfile"
+    cat >$tmpfile <<EOF
+FROM $LOCAL_DOCKER_IMAGE as base
+
+FROM $JDK_HELPER_IMAGE:$JDK_HELPER_TAG as helper
+COPY --from=base /app/jenkins /app/jenkins
+# Zip /app/jenkins into jenkins.war because plugin manager works against a WAR/JAR 
+RUN cd /app/jenkins && \\
+    jar -cvf jenkins.war *
+
+FROM $LOCAL_DOCKER_IMAGE
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+COPY --from=helper /app/jenkins/jenkins.war /app/jenkins/jenkins.war
+
+# Update plugins:
+RUN java -jar /app/bin/jenkins-plugin-manager.jar \\
+    --war /app/jenkins/jenkins.war \\
+    --plugin-file /usr/share/jenkins/ref/plugins.txt \\
+    && rm /app/jenkins/jenkins.war
+EOF
+
+    docker build -t $LOCAL_DOCKER_IMAGE -f "$tmpfile" .
+    rm $tmpfile
+    echo "JFR Add plugin done!"
+
+}
 
 sanity () {
     docker run --rm \
@@ -42,16 +98,18 @@ sanity () {
             "
 }
 
-bash () {
+sh () {
+    verify_local_image
     docker run --rm \
         -e "JAVA_OPTS=$JAVA_OPTS" \
         -v "$(pwd):/workspace" \
         -it \
-        --entrypoint bash \
-        $DOCKER_IMAGE
+        --entrypoint sh \
+        $LOCAL_DOCKER_IMAGE
 }
 
 base () {
+    verify_local_image
     if [ $USER_INPUT -eq 0 ]
     then
         docker run --rm \
@@ -59,14 +117,14 @@ base () {
             -v "$(pwd):/workspace" \
             -i \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-            $DOCKER_IMAGE $@
+            $LOCAL_DOCKER_IMAGE $@
     else
         docker run --rm \
             -it \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-            $DOCKER_IMAGE $@
+            $LOCAL_DOCKER_IMAGE $@
     fi
 }
 
@@ -114,7 +172,10 @@ info () {
 echo "[*] Params: $@"
 
 if [ "$1" = "sanity" ]; then sanity $@; exit $? ; fi
-if [ "$1" = "bash" ]; then bash; exit $? ; fi
+if [ "$1" = "sh" ]; then sh; exit $? ; fi
+
+if [ "$1" = "pull" ]; then pull; exit $? ; fi
+if [ "$1" = "addplugins" ]; then addplugins; exit $? ; fi
 
 if [ "$1" = "lint" ]; then lint $@; exit $? ; fi
 if [ "$1" = "run" ]; then run  ${@: 2}; exit $? ; fi
@@ -132,7 +193,7 @@ echo "How to run:"
 echo -e "\tbash jenkins.docker.sh <verb> <params>"
 echo ""
 echo "Verbs:"
-echo -e "\t\033[1m sanity, bash, lint, run, cli, info \033[0m"
+echo -e "\t\033[1m pull, sanity, sh, lint, run, cli, info \033[0m"
 echo -e "\t\t (No params)"
 echo -e "\t\033[1m runfile\033[0m"
 echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
@@ -140,3 +201,6 @@ echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd
 echo -e "\t\033[1m lintfile\033[0m"
 echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
 echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd>"
+echo -e "\t\033[1m addplugins\033[0m"
+echo -e "\t\t need ./plugins.txt with {id}:{version} like slack:latest"
+echo -e "\t\t see https://updates.jenkins-ci.org/download/plugins/"

@@ -1,1 +1,1 @@
-slack
+slack:latest
