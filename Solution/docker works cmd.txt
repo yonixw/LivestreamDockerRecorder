@@ -38,4 +38,5 @@ docker run --shm-size=256m -e VNC_PASSWD=123456  -it -p 5901:5901 obs-firefox-vn
 
 rm /tmp/.X0-lock
 rm /var/run/dbus/pid
+    pulseaudio will not work in commit after vnc login? start, dont login and commit again?
 rm ~/.config/obs-studio 
