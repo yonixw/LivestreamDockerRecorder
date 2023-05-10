@@ -7,5 +7,6 @@ services:
       - "15901:5901"
     env_file: .env #VNC_PASSWD=...
     volumes:
-      - ./recorder:/root
+      # Mounting /root will make all config go away! (OBS, Firefox plugins etc.)
+      - ./recorder:/usr/obs
       - ./files:/files:ro
