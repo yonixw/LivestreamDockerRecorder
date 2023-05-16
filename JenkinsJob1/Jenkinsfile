@@ -34,7 +34,12 @@ pipeline {
             // how to debug: 
             // https://stackoverflow.com/a/63490535/1997873
             agent {
-                 docker { image 'node' }
+                 docker { 
+                    image 'node' 
+                    image 'node:6-alpine'
+                    args '-v ${PWD}:/usr/src/app -w /usr/src/app'
+                    reuseNode true
+                }
             }
             steps {
                 sh 'ls -la /'
