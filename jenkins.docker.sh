@@ -23,6 +23,9 @@
 # mask pass
 # share files? share env?
 # Hide pre pipeline stuff until "Started" but show a WARN for it...
+# array loop
+    # https://gist.github.com/oifland/ab56226d5f0375103141b5fbd7807398
+    # https://serverfault.com/questions/1014334/how-to-use-for-loop-in-jenkins-declarative-pipeline
 
 # Config
 SHOW_VERBOSE=${VERBOSE:-0}
@@ -143,8 +146,11 @@ base () {
     if [ $USER_INPUT -eq 0 ]
     then
         docker run --rm \
+            -t \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
+            -v "$(pwd):/$(pwd)" \
+            -v "$(pwd)@tmp:/$(pwd)@tmp" \
             -v /var/run/docker.sock:/var/run/docker.sock \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
             $LOCAL_DOCKER_IMAGE $@ 2>&1 | grep -v $REMOVE_GREP
@@ -181,7 +187,7 @@ runfile () {
     # [05.05.23] For some reason, a verb (lint, run) clear flags, so we set them again.
     base run --jenkins-war /app/jenkins \
     --plugins /usr/share/jenkins/ref/plugins \
-    --runWorkspace /build \
+    --runWorkspace "$(pwd)" \
     $@
 }
 

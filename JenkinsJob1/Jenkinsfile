@@ -37,7 +37,8 @@ pipeline {
                  docker { 
                     image 'node' 
                     image 'node:6-alpine'
-                    args '-v ${PWD}:/usr/src/app -w /usr/src/app'
+                    //args '-v ${PWD}:/usr/src/app'
+                    args '--tmpfs /build:rw --tmpfs /build@tmp:rw'
                     reuseNode true
                 }
             }
