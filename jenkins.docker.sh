@@ -103,13 +103,13 @@ RUN cd /app/jenkins && \\
 
 FROM $LOCAL_DOCKER_IMAGE
 COPY Jenkins-plugins.txt /usr/share/jenkins/ref/plugins.txt
-COPY Jenkins-img-install.sh /tmp/Jenkins-img-install.sh
+COPY Jenkins-prepare.sh /tmp/Jenkins-prepare.sh
 COPY --from=helper /app/jenkins/jenkins.war /app/jenkins/jenkins.war
 
 # add user defined software:
-RUN chmod +x /tmp/Jenkins-img-install.sh && \
-    /tmp/Jenkins-img-install.sh && \
-    rm /tmp/Jenkins-img-install.sh
+RUN chmod +x /tmp/Jenkins-prepare.sh && \
+    /tmp/Jenkins-prepare.sh && \
+    rm /tmp/Jenkins-prepare.sh
 
 # Update plugins:
 RUN java -jar /app/bin/jenkins-plugin-manager.jar \\
