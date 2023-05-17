@@ -1,4 +1,6 @@
 #!/bin/bash
+# exit when any command fails
+set -e
 
 # Docker Git:
 # https://github.com/jenkinsci/jenkinsfile-runner
@@ -63,6 +65,12 @@ JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=fals
 # Inner Flag if to pass `-t` to docker run
 USER_INPUT=0
 
+# Workaround for dind (need mountex "ws" + "ws@tmp" + pwd (that the link point to))
+tmpdindctx=$(mktemp -d -t jfr-dind-ctx-XXXXXX)
+mkdir -p $tmpdindctx/ws@tmp
+ln -s "$(pwd)" $tmpdindctx/ws # ln -s real soft
+echo "[*] Using temp context: $tmpdindctx"
+
 verify_local_image() {
     docker images --format "{{.Repository}}:{{.Tag}}" | grep $LOCAL_DOCKER_IMAGE > /dev/null
     if [ $? -ne 0 ]
@@ -121,6 +129,7 @@ EOF
 sanity () {
     docker run --rm \
         -e "JAVA_OPTS=$JAVA_OPTS" \
+        -v  "$tmpdindctx:$tmpdindctx" \
         -v "$(pwd):/workspace" \
         bash \
             -c " \
@@ -135,6 +144,8 @@ sh () {
     verify_local_image
     docker run --rm \
         -e "JAVA_OPTS=$JAVA_OPTS" \
+        -v  "$tmpdindctx:$tmpdindctx" \
+        -v "$(pwd):$(pwd)" \
         -v "$(pwd):/workspace" \
         -it \
         --entrypoint sh \
@@ -145,23 +156,26 @@ base () {
     verify_local_image
     if [ $USER_INPUT -eq 0 ]
     then
+        # "-i" Important for getting info input from stdin
         docker run --rm \
-            -t \
+            -i \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
-            -v "$(pwd):/$(pwd)" \
-            -v "$(pwd)@tmp:/$(pwd)@tmp" \
+            -v  "$tmpdindctx:$tmpdindctx" \
+            -v "$(pwd):$(pwd)" \
             -v /var/run/docker.sock:/var/run/docker.sock \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-            $LOCAL_DOCKER_IMAGE $@ 2>&1 | grep -v $REMOVE_GREP
+            $LOCAL_DOCKER_IMAGE $@ 
     else
         docker run --rm \
             -it \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
+            -v  "$tmpdindctx:$tmpdindctx" \
+            -v "$(pwd):$(pwd)" \
             -v /var/run/docker.sock:/var/run/docker.sock \
             --entrypoint "/app/bin/jenkinsfile-runner-launcher" \
-            $LOCAL_DOCKER_IMAGE $@ 2>&1 | grep -v $REMOVE_GREP
+            $LOCAL_DOCKER_IMAGE $@ 
     fi
 }
 
@@ -171,25 +185,40 @@ lintfile () {
     # [05.05.23] For some reason, a verb (lint, run) clear flags, so we set them again.
     base lint --jenkins-war /app/jenkins \
     --plugins /usr/share/jenkins/ref/plugins \
-    $@
+    $@ \
+    2>&1 | grep -v $REMOVE_GREP
 }
 
 lint () {
-    lintfile --file /workspace/Jenkinsfile 
+    lintfile --file /workspace/Jenkinsfile \
+    2>&1 | grep -v $REMOVE_GREP
 }
 
 run () {
    # No verb = run, but pass flags (-a = params)
-   base $@
+   base $@ \
+    2>&1 | grep -v $REMOVE_GREP
 }
 
 runfile () {
     # [05.05.23] For some reason, a verb (lint, run) clear flags, so we set them again.
     base run --jenkins-war /app/jenkins \
     --plugins /usr/share/jenkins/ref/plugins \
-    --runWorkspace "$(pwd)" \
-    $@
+    --runWorkspace "/buid" \
+    $@ \
+    2>&1 | grep -v $REMOVE_GREP
 }
+
+rundind () {
+    # [05.05.23] For some reason, a verb (lint, run) clear flags, so we set them again.
+    base run --jenkins-war /app/jenkins \
+    --plugins /usr/share/jenkins/ref/plugins \
+    --runWorkspace "$tmpdindctx/ws" \
+    --file "$tmpdindctx/ws/Jenkinsfile" \
+    $@ \
+    2>&1 | grep -v $REMOVE_GREP
+}
+
 
 cli () {
     # Version, list-plugins
@@ -202,12 +231,16 @@ info () {
     echo "[*] Runner version:"
     base version
     echo "[*] Jenkins version and plugins:"
-    echo -e "version\nlist-plugins" | base --cli 2>&1 \
+    echo -e "version\nlist-plugins" | \
+        base --cli \
+        2>&1 \
         | grep -E "^([a-z]|\s+>)" | grep -v "bye" # hide cli warnings
 }
 
 exit_back() {
+    rm -rf $tmpdindctx
     cd "$CURR_DIR"
+    echo "[*] JFR done with code $1"
     exit $1
 }
 
@@ -228,6 +261,8 @@ if [ "$1" = "info" ]; then info; exit_back $? ; fi
 # runfile expect --file relative to "pwd", we skip 2 params 
 #    (https://stackoverflow.com/a/62630975/1997873)
 if [ "$1" = "runfile" ]; then runfile ${@: 2}; exit_back $? ; fi
+if [ "$1" = "rundind" ]; then rundind ${@: 2}; exit_back $? ; fi
+
 if [ "$1" = "lintfile" ]; then lintfile ${@: 2}; exit_back $? ; fi
 
 
@@ -241,15 +276,33 @@ echo -e "\t\033[1m DIR \033[0m"
 echo -e "\t\t where the Jenkins files are located"
 echo ""
 echo "Verbs:"
-echo -e "\t\033[1m pull, sanity, sh, lint, run, cli, info \033[0m"
+
+echo -e "\t\033[1m pull\033[0m: pull/restore default JFR docker image"
 echo -e "\t\t (No params)"
-echo -e "\t\033[1m runfile\033[0m"
+echo -e "\t\033[1m sanity\033[0m: print Jenkinsfile+env+ls from docker"
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m sh\033[0m: run shell inside a docker, good for test/debug"
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m lint\033[0m: lint the Jenkinsfile using JFR image"
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m run\033[0m: run the Jenkinsfile using JFR image (no dind)"
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m rundind\033[0m: run the Jenkinsfile using JFR image (using docker-in-docker fixes)"
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m cli\033[0m: get a JFR cli session "
+echo -e "\t\t (No params)"
+echo -e "\t\033[1m info\033[0m: get versions and plugins in current JFR image "
+echo -e "\t\t (No params)"
+
+
+echo -e "\t\033[1m runfile:\033[0m"
 echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
 echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd>"
-echo -e "\t\033[1m lintfile\033[0m"
+echo -e "\t\033[1m lintfile:\033[0m"
 echo -e "\t\t --file|-f /workspace/<relative \033[4mJenkinsfile\033[0m to pwd>"
 echo -e "\t\t --plugins|-p /workspace/<relative \033[4mplugins.txt\033[0m to pwd>"
-echo -e "\t\033[1m addplugins\033[0m"
+echo -e "\t\033[1m addplugins:\033[0m"
+echo -e "\t\t replaces local JFR image with a custom one"
 echo -e "\t\t need ./plugins.txt with {id}:{version} like slack:2.49"
 echo -e "\t\t see https://updates.jenkins-ci.org/download/plugins/"
 echo -e "\t\t but make sure it compatible with docker version"
