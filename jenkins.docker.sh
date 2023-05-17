@@ -230,7 +230,10 @@ cli () {
 info () {
     echo "[*] Runner version:"
     base version
-    echo "[*] Jenkins version and plugins:"
+    echo "[*] Jenkins from MANIFEST.MF:"
+    docker run --rm --entrypoint sh $LOCAL_DOCKER_IMAGE -c \
+        "cat /app/jenkins/META-INF/MANIFEST.MF | grep Jenkins-Version | grep -oE \"[0-9]+(\.[0-9]+)+\""
+    echo "[*] Jenkins CLI version and plugins:"
     echo -e "version\nlist-plugins" | \
         base --cli \
         2>&1 \
