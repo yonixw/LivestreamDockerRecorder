@@ -18,19 +18,20 @@ set -e
 # /workspace/Jenkinsfile
 
 #todo:
-# fix dind bug with same name share: https://github.com/jenkinsci/docker/issues/626#issuecomment-358331311
 # how to create local docker from latest version of jenkins, or from a specifiec one?
-
 # Better log? stage prefix per line?
+#   how parallel log looks  like with docker agent?
 #   
 # mask pass
 # share env?
 # array loop
     # https://gist.github.com/oifland/ab56226d5f0375103141b5fbd7807398
     # https://serverfault.com/questions/1014334/how-to-use-for-loop-in-jenkins-declarative-pipeline
+#
 # [V] timestamp label - plugin
 # [V] share file - stash
 # [V] Hide pre pipeline stuff until "Started" but show a WARN for it...
+# [V] fix dind bug with same name share: https://github.com/jenkinsci/docker/issues/626#issuecomment-358331311
 
 # Config
 SHOW_VERBOSE=${VERBOSE:-0}
