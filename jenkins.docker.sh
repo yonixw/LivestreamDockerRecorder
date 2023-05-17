@@ -21,13 +21,16 @@ set -e
 # fix dind bug with same name share: https://github.com/jenkinsci/docker/issues/626#issuecomment-358331311
 # how to create local docker from latest version of jenkins, or from a specifiec one?
 
-# stage+timestamp label
+# Better log? stage prefix per line?
+#   
 # mask pass
-# share files? share env?
-# Hide pre pipeline stuff until "Started" but show a WARN for it...
+# share env?
 # array loop
     # https://gist.github.com/oifland/ab56226d5f0375103141b5fbd7807398
     # https://serverfault.com/questions/1014334/how-to-use-for-loop-in-jenkins-declarative-pipeline
+# [V] timestamp label - plugin
+# [V] share file - stash
+# [V] Hide pre pipeline stuff until "Started" but show a WARN for it...
 
 # Config
 SHOW_VERBOSE=${VERBOSE:-0}
@@ -43,6 +46,7 @@ if [ $SHOW_VERBOSE -eq 1 ]
 then
     echo "[*] Verbose mode is on"
     JVM_VERBOSE="-Dorg.jenkinsci.plugins.durabletask.BourneShellScript.LAUNCH_DIAGNOSTICS=true"
+    #   https://stackoverflow.com/a/63490535/1997873 for debugging dind that uses durable tasks
     REMOVE_GREP="_unlikely_string_"
 else
     REMOVE_GREP="WARNING"
@@ -65,9 +69,9 @@ JAVA_OPTS="-Xms256m -Dhudson.model.ParametersAction.keepUndefinedParameters=fals
 # Inner Flag if to pass `-t` to docker run
 USER_INPUT=0
 
-# Workaround for dind (need mountex "ws" + "ws@tmp" + pwd (that the link point to))
+# Workaround for dind (need mountex "ws" + "ws@/1/2/..." + pwd (that the link point to))
 tmpdindctx=$(mktemp -d -t jfr-dind-ctx-XXXXXX)
-mkdir -p $tmpdindctx/ws@tmp
+# this created temp dir, and allow all ws@???@tmp to be created and shared
 ln -s "$(pwd)" $tmpdindctx/ws # ln -s real soft
 echo "[*] Using temp context: $tmpdindctx"
 
@@ -241,6 +245,7 @@ info () {
 }
 
 exit_back() {
+    echo "[*] JFR Clean temps..."
     rm -rf $tmpdindctx
     cd "$CURR_DIR"
     echo "[*] JFR done with code $1"
@@ -257,6 +262,7 @@ if [ "$1" = "addplugins" ]; then addplugins; exit_back $? ; fi
 
 if [ "$1" = "lint" ]; then lint $@; exit_back $? ; fi
 if [ "$1" = "run" ]; then run  ${@: 2}; exit_back $? ; fi
+if [ "$1" = "rundind" ]; then rundind; exit_back $? ; fi
 
 if [ "$1" = "cli" ]; then cli $@; exit_back $? ; fi
 if [ "$1" = "info" ]; then info; exit_back $? ; fi
@@ -264,7 +270,6 @@ if [ "$1" = "info" ]; then info; exit_back $? ; fi
 # runfile expect --file relative to "pwd", we skip 2 params 
 #    (https://stackoverflow.com/a/62630975/1997873)
 if [ "$1" = "runfile" ]; then runfile ${@: 2}; exit_back $? ; fi
-if [ "$1" = "rundind" ]; then rundind ${@: 2}; exit_back $? ; fi
 
 if [ "$1" = "lintfile" ]; then lintfile ${@: 2}; exit_back $? ; fi
 
@@ -291,6 +296,7 @@ echo -e "\t\t (No params)"
 echo -e "\t\033[1m run\033[0m: run the Jenkinsfile using JFR image (no dind)"
 echo -e "\t\t (No params)"
 echo -e "\t\033[1m rundind\033[0m: run the Jenkinsfile using JFR image (using docker-in-docker fixes)"
+echo -e "\t\t Works best with agent.resueNode=true"
 echo -e "\t\t (No params)"
 echo -e "\t\033[1m cli\033[0m: get a JFR cli session "
 echo -e "\t\t (No params)"

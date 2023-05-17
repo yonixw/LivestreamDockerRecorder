@@ -30,21 +30,34 @@ pipeline {
                 sh 'docker ps'
             }
         }
-        stage('Example_Docker') {
-            // how to debug: 
-            // https://stackoverflow.com/a/63490535/1997873
+        stage('Example Docker') {
             agent {
                  docker { 
                     image 'node' 
                     image 'node:6-alpine'
                     //args '-v ${PWD}:/usr/src/app'
-                    args '--tmpfs /build:rw --tmpfs /build@tmp:rw'
                     reuseNode true
                 }
             }
             steps {
-                sh 'ls -la /'
+                sh 'echo $(date) > result.txt'
+                sh 'ls -la .'
                 sh 'node -v'
+                stash includes: 'result.txt', name: 'app'  
+            }
+        }
+        stage('Example Docker2') {
+            agent {
+                 docker { 
+                    image 'python' 
+                    //args '-v ${PWD}:/usr/src/app'
+                    reuseNode true
+                }
+            }
+            steps {
+                unstash 'app' 
+                sh 'cat result.txt || ls -la .'
+                sh 'python -V'
             }
         }
     }
