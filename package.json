@@ -10,6 +10,8 @@
     "terraform": "gitlab-ci-local terraform --variable TF_VAR_hcloud_token=$HT",
     "ansible": "gitlab-ci-local ansible",
     "ansible-full": "gitlab-ci-local ansible --variable TF_VAR_hcloud_token=$HT --variable ANSIBLE_IMAGE=${VNC_IMAGE:-yonixw/obs-audio-firefox}",
-    "all": "gitlab-ci-local --variable TF_VAR_hcloud_token=$HT --variable ANSIBLE_IMAGE=${VNC_IMAGE:-yonixw/obs-audio-firefox}"
+    "all": "gitlab-ci-local --variable TF_VAR_hcloud_token=$HT --variable ANSIBLE_IMAGE=${VNC_IMAGE:-yonixw/obs-audio-firefox}",
+    "jenkins1": "DIR=JenkinsJob1 bash jenkins.docker.sh pull && DIR=JenkinsJob1 bash jenkins.docker.sh addplugins",
+    "jenkins2": "DIR=JenkinsJob1 bash jenkins.docker.sh rundind"
   }
 }

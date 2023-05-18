@@ -18,15 +18,22 @@ set -e
 # /workspace/Jenkinsfile
 
 #todo:
-# how to create local docker from latest version of jenkins, or from a specifiec one?
 # Better log? stage prefix per line?
+#   A must for parallel stuff
+#   alsto timestamp per row?
 #   how parallel log looks  like with docker agent?
-#   
+#   https://github.com/gdemengin/pipeline-logparser
+#       logs of nested stages (stage inside stage)
+#       if 2 steps or stages have the sane name
+# DIR to change docker build context or Jenkinsfile source
+# "rundind" custom --file input   
 # mask pass
+#    in console print and log export
 # share env?
 # array loop
     # https://gist.github.com/oifland/ab56226d5f0375103141b5fbd7807398
     # https://serverfault.com/questions/1014334/how-to-use-for-loop-in-jenkins-declarative-pipeline
+# how to create local docker from latest version of jenkins, or from a specifiec one?
 #
 # [V] timestamp label - plugin
 # [V] share file - stash
@@ -164,6 +171,7 @@ base () {
         # "-i" Important for getting info input from stdin
         docker run --rm \
             -i \
+            -p 40888:80 \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
             -v  "$tmpdindctx:$tmpdindctx" \
@@ -174,6 +182,7 @@ base () {
     else
         docker run --rm \
             -it \
+            -p 40888:80 \
             -e "JAVA_OPTS=$JAVA_OPTS" \
             -v "$(pwd):/workspace" \
             -v  "$tmpdindctx:$tmpdindctx" \
@@ -220,6 +229,7 @@ rundind () {
     --plugins /usr/share/jenkins/ref/plugins \
     --runWorkspace "$tmpdindctx/ws" \
     --file "$tmpdindctx/ws/Jenkinsfile" \
+    --httpPort 80 \
     $@ \
     2>&1 | grep -v $REMOVE_GREP
 }
@@ -235,6 +245,8 @@ cli () {
 info () {
     echo "[*] Runner version:"
     base version
+    # TODO: echo "[*] Jenkins from HTTP:"
+    # curl http://localhost:80 .. wait on idle flag?
     echo "[*] Jenkins from MANIFEST.MF:"
     docker run --rm --entrypoint sh $LOCAL_DOCKER_IMAGE -c \
         "cat /app/jenkins/META-INF/MANIFEST.MF | grep Jenkins-Version | grep -oE \"[0-9]+(\.[0-9]+)+\""

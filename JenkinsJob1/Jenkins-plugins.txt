@@ -4,3 +4,4 @@ docker-commons:1.21
 docker-workflow:1.29
 configuration-as-code:1512.vb_79d418d5fc8
 timestamper:1.21
+pipeline-rest-api:2.28
