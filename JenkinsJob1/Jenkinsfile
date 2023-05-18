@@ -79,6 +79,8 @@ pipeline {
                 // currentBuild = org.jenkinsci.plugins.workflow.support.steps.build.RunWrapper
                 echo "currentBuild.fullDisplayName=${currentBuild.fullDisplayName}"
                 echo "currentBuild.url=${currentBuild.absoluteUrl}"
+                echo "If you see this, done!"
+                sh "sleep 1d"
             }
         }
     }

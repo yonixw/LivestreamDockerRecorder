@@ -20,21 +20,31 @@ set -e
 #todo:
 # Better log? stage prefix per line?
 #   A must for parallel stuff
-#   alsto timestamp per row?
+#       after docker install we have python... use it? or just ts with deno docker? user defined in post {} ?
+#       reset && curl -v http://localhost:80/job/job/1/execution/node/22/wfapi/log | jq
+#           http://localhost:80/job/job/1/wfapi/describe => $BUILD_URL/wfapi/describe
+#       curl http://localhost:80/job/job/1/consoleText || consoleFull
+#       curl http://localhost:80/job/job/1/api/json?depth=2 | jq
+
 #   how parallel log looks  like with docker agent?
 #   https://github.com/gdemengin/pipeline-logparser
 #       logs of nested stages (stage inside stage)
 #       if 2 steps or stages have the sane name
+# AsciColor plufing.. html?
 # DIR to change docker build context or Jenkinsfile source
-# "rundind" custom --file input   
+#       how to handle workspace in pwd like in gitpod?
+# "rundind" variation with custom --file input
+#  also add http port for all verbs
 # mask pass
 #    in console print and log export
-# share env?
+# share env between stages?
+# share "def" between scripts in other dockers?
 # array loop
     # https://gist.github.com/oifland/ab56226d5f0375103141b5fbd7807398
     # https://serverfault.com/questions/1014334/how-to-use-for-loop-in-jenkins-declarative-pipeline
 # how to create local docker from latest version of jenkins, or from a specifiec one?
 #
+# [X] alsto timestamp per row? -> calc from wfapi
 # [V] timestamp label - plugin
 # [V] share file - stash
 # [V] Hide pre pipeline stuff until "Started" but show a WARN for it...
