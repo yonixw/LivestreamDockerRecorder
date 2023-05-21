@@ -12,6 +12,8 @@
     "ansible-full": "gitlab-ci-local ansible --variable TF_VAR_hcloud_token=$HT --variable ANSIBLE_IMAGE=${VNC_IMAGE:-yonixw/obs-audio-firefox}",
     "all": "gitlab-ci-local --variable TF_VAR_hcloud_token=$HT --variable ANSIBLE_IMAGE=${VNC_IMAGE:-yonixw/obs-audio-firefox}",
     "jenkins1": "DIR=JenkinsJob1 bash jenkins.docker.sh pull && DIR=JenkinsJob1 bash jenkins.docker.sh addplugins",
-    "jenkins2": "DIR=JenkinsJob1 bash jenkins.docker.sh rundind"
+    "jenkins2": "DIR=JenkinsJob1 bash jenkins.docker.sh rundind",
+    "deno1": "docker run -it -v $PWD:/app  denoland/deno deno run --allow-net /app/JenkinsJob1/getLogs.ts",
+    "dockerip": "docker inspect   -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
   }
 }
