@@ -13,11 +13,20 @@ pipeline {
     }
     stages {
         stage('Build') {
-            steps {
-                echo 'Hello world!'
-                echo "message: ${params.param1}"
-                echo "param2: ${params.param2}"
-                sh 'ls -la'
+            parallel {
+                stage('Build.A') {
+                    steps {
+                        echo 'Hello world!'
+                        echo "message: ${params.param1}"
+                        echo "param2: ${params.param2}"
+                        sh 'ls -la'
+                    }
+                }
+                stage('Build.B') {
+                    steps {
+                        echo "Inside C inside B!"
+                    }
+                }
             }
         }
         stage('Example') {
@@ -31,36 +40,36 @@ pipeline {
                 echo "Did you see last docker ps command?"
             }
         }
-//        stage('Example Docker') {
-//            agent {
-//                 docker { 
-//                    image 'node' 
-//                    image 'node:6-alpine'
-//                    //args '-v ${PWD}:/usr/src/app'
-//                    reuseNode true
-//                }
-//            }
-//            steps {
-//                sh 'echo $(date) > result.txt'
-//                sh 'ls -la .'
-//                sh 'node -v'
-//                stash includes: 'result.txt', name: 'app'  
-//            }
-//        }
-//        stage('Example Docker2') {
-//            agent {
-//                 docker { 
-//                    image 'python' 
-//                    //args '-v ${PWD}:/usr/src/app'
-//                    reuseNode true
-//                }
-//            }
-//            steps {
-//                unstash 'app' 
-//                sh 'cat result.txt || ls -la .'
-//                sh 'python -V'
-//            }
-//        }
+        stage('Example Docker') {
+            agent {
+                 docker { 
+                    image 'node' 
+                    image 'node:6-alpine'
+                    //args '-v ${PWD}:/usr/src/app'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh 'echo $(date) > result.txt'
+                sh 'ls -la .'
+                sh 'node -v'
+                stash includes: 'result.txt', name: 'app'  
+            }
+        }
+        stage('Example Docker2') {
+            agent {
+                 docker { 
+                    image 'python' 
+                    //args '-v ${PWD}:/usr/src/app'
+                    reuseNode true
+                }
+            }
+            steps {
+                unstash 'app' 
+                sh 'cat result.txt || ls -la .'
+                sh 'python -V'
+            }
+        }
         stage('BuiltInStuff') {
             steps {
                 sh '''
@@ -81,6 +90,11 @@ pipeline {
                 echo "currentBuild.url=${currentBuild.absoluteUrl}"
                 echo "If you see this, done!"
                 sh "sleep 1d"
+            }
+        }
+        stage('BuiltInStuff2') {
+            steps {
+                echo "Pending?"
             }
         }
     }
