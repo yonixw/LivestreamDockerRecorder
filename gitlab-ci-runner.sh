@@ -5,14 +5,12 @@ NO_CHANGES=$?
 
 if [ $NO_CHANGES -eq 0 ]
 then
-    echo "Not all files commited! exiting..."
-    exit 1
-
+    echo "[*] [WARN] Not all files commited! They will be ignored..."
 fi
 
 echo "[*] Setting up..."
 
-stages=${@} # use space seperated params
+jobs=${@} # use space seperated params
 PWD_RESOLVED="$(pwd -P)"
 mkdir -p $PWD_RESOLVED/gitlab-runner-cache
 
@@ -27,26 +25,28 @@ docker run -d --name gitlab-runner --restart always \
     gitlab/gitlab-runner:latest
 
 
-# Bug fix, see: https://stackoverflow.com/revisions/65920577/13
+# Bug fix, see: https://stackoverflow.com/a/65920577/1997873
 docker exec \
     gitlab-runner \
     bash -c 'git config --global --add safe.directory "*"'
 
-echo "[*] Running jobs(s): ${stages[*]}"
+echo "[*] Running jobs(s): ${jobs[*]}"
 
-for stage in ${stages[*]};
+for job in ${jobs[*]};
 do
-        echo "[*] Stage=$stage"
+        echo "[*] -------------"
+        echo "[*] Job=$job"
         docker exec \
             -w $PWD_RESOLVED \
             -it gitlab-runner \
             gitlab-runner exec \
-            docker $stage \
+            docker $job \
             --cache-dir /cache \
             --docker-cache-dir /cache \
             --docker-volumes $PWD_RESOLVED/gitlab-runner-cache:/cache/ \
             --docker-volumes '/var/run/docker.sock:/var/run/docker.sock' \
-            --env ROOT_PWD=$PWD_RESOLVED 
+            --env ROOT_PWD=$PWD_RESOLVED \
+        | sed -e "s/^/[$job] /;"
 done
 
 
