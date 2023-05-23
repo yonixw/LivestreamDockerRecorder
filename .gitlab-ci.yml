@@ -1,10 +1,17 @@
 ---
-stage1:
-  #  stage: build
+j1:
+  stage: build
   image: ubuntu
   script:
-    - printenv
+    - printenv | grep -E ^CI_
     - echo ok
+    - ls -la --human-readable
+
+j2:
+  stage: build
+  image: ubuntu
+  script:
+    - echo ok2
 ## sshgen:
 ##   stage: build
 ##   image: ubuntu

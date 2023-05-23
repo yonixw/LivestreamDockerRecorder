@@ -1,4 +1,4 @@
-# From: https://github.com/firecow/gitlab-ci-local
+# For community tool: https://github.com/firecow/gitlab-ci-local
 
 sudo apt install -y git rsync
 yarn global add gitlab-ci-local
