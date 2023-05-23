@@ -1,106 +1,88 @@
 ---
-j1:
+sshgen:
   stage: build
   image: ubuntu
   script:
-    - printenv | grep -E ^CI_
-    - echo ok
-    - ls -la --human-readable
-
-j2:
+    - apt update && apt install -y openssh-client
+    - mkdir -p ./artifacts
+    - rm -f ./artifacts/key && rm -f ./artifacts/key.pub
+    - ssh-keygen -f ./artifacts/key -t rsa -b 4096 -q -N "" -C "" # -N is pass -C is username
+    - ls -la && pwd
+  artifacts:
+    expire_in: 24 hour # default is 30days
+    paths:
+      - ./artifacts/*
+terraform:
+  image:
+    name: hashicorp/terraform
+    entrypoint: ["/bin/sh", "-lc"]
   stage: build
-  image: ubuntu
+  needs:
+    - "sshgen"
+  dependencies:
+    - "sshgen"
   script:
-    - echo ok2
-## sshgen:
-##   stage: build
-##   image: ubuntu
-##   script:
-##     - apt update && apt install -y openssh-client
-##     - mkdir -p ./artifacts
-##     - rm -f ./artifacts/key && rm -f ./artifacts/key.pub
-##     - ssh-keygen -f ./artifacts/key -t rsa -b 4096 -q -N "" -C "" # -N is pass -C is username
-##     - ls -la && pwd
-##   artifacts:
-##     expire_in: 24 hour # default is 30days
-##     paths:
-##       - ./artifacts/*
-##
-## terraform:
-##   image:
-##     name: hashicorp/terraform
-##     entrypoint: ["/bin/sh", "-lc"]
-##   stage: build
-##   needs:
-##     - "sshgen"
-##   dependencies:
-##     - "sshgen"
-##   script:
-##     - export TF_VAR_prefix=$(date +"dt%Y%m%dts%H%Mr$RANDOM")
-##     - export TF_VAR_ssh_deploy_pub_path=../../artifacts/key.pub
-##     - echo prefix=$TF_VAR_prefix
-##     - cd jobs/1terraform-hetzner
-##     - terraform init
-##     - terraform plan
-##     - terraform apply -auto-approve
-##     - terraform output -raw ip > ../../artifacts/vm_ip.txt && echo ./artifacts/vm_ip.txt
-##   #    - terraform destroy -auto-approve --target hcloud_ssh_key.ssh_deploy
-##   artifacts:
-##     expire_in: 24 hour # default is 30days
-##     paths:
-##       - ./artifacts/*
-##
-## getkey:
-##   # A (empty) task for local dev that:
-##   # reads artifacts (because declaring them, give access to files)
-##   # and expose to other task (if they depend on us + need us)
-##   stage: build
-##   artifacts:
-##     expire_in: 24 hour # default is 30days
-##     paths:
-##       - ./artifacts/*
-##   script:
-##     - ls -la artifacts
-##
-## ansible:
-##   image: alpinelinux/ansible
-##   stage: build
-##   dependencies:
-##     #- "getkey" # get artifact if exist w.o. running dependant
-##     - "sshgen"
-##     - "terraform"
-##   needs:
-##     #- "getkey" # get artifact if exist w.o. running dependant
-##     - "sshgen"
-##     - "terraform"
-##   script:
-##     - export IP=$(cat ./artifacts/vm_ip.txt) && echo IP=$IP
-##     - cd jobs/2ansible-containers
-##     # Prepare what needed:
-##     - touch output.txt && sh local_prepare.sh
-##     # Add ip, otherwise only localhost allowed
-##     - mkdir -p /etc/ansible && echo $IP >> /etc/ansible/hosts
-##     # Ignore Host key checking (new key..)
-##     - export ANSIBLE_HOST_KEY_CHECKING=False
-##     # Playbook with our ip as target
-##     - ansible --version
-##     - ansible-playbook playbook.yml -u root --private-key "../../artifacts/key" --extra-vars "target_ip=$IP"
-##     # Cat output:
-##     - cat output.txt
-## #
-## # See examples:
-## # https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml
-##
-## ### @Description Build alpine
-## ##alpine-image:
-## ##  services:
-## ##    - docker:dind
-## ##  needs: []
-## ##  image: docker:stable
-## ##  stage: build
-## ##  script:
-## ##    - printenv
-## ##    - ls -all /certs/client
-## ##    - ls .
-## ##    - pwd
-##
+    - export TF_VAR_prefix=$(date +"dt%Y%m%dts%H%Mr$RANDOM")
+    - export TF_VAR_ssh_deploy_pub_path=../../artifacts/key.pub
+    - echo prefix=$TF_VAR_prefix
+    - cd jobs/1terraform-hetzner
+    - terraform init
+    - terraform plan
+    - terraform apply -auto-approve
+    - terraform output -raw ip > ../../artifacts/vm_ip.txt && echo ./artifacts/vm_ip.txt
+  #    - terraform destroy -auto-approve --target hcloud_ssh_key.ssh_deploy
+  artifacts:
+    expire_in: 24 hour # default is 30days
+    paths:
+      - ./artifacts/*
+getkey:
+  # A (empty) task for local dev that:
+  # reads artifacts (because declaring them, give access to files)
+  # and expose to other task (if they depend on us + need us)
+  stage: build
+  artifacts:
+    expire_in: 24 hour # default is 30days
+    paths:
+      - ./artifacts/*
+  script:
+    - ls -la artifacts
+ansible:
+  image: alpinelinux/ansible
+  stage: build
+  dependencies:
+    #- "getkey" # get artifact if exist w.o. running dependant
+    - "sshgen"
+    - "terraform"
+  needs:
+    #- "getkey" # get artifact if exist w.o. running dependant
+    - "sshgen"
+    - "terraform"
+  script:
+    - export IP=$(cat ./artifacts/vm_ip.txt) && echo IP=$IP
+    - cd jobs/2ansible-containers
+    # Prepare what needed:
+    - touch output.txt && sh local_prepare.sh
+    # Add ip, otherwise only localhost allowed
+    - mkdir -p /etc/ansible && echo $IP >> /etc/ansible/hosts
+    # Ignore Host key checking (new key..)
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    # Playbook with our ip as target
+    - ansible --version
+    - ansible-playbook playbook.yml -u root --private-key "../../artifacts/key" --extra-vars "target_ip=$IP"
+    # Cat output:
+    - cat output.txt
+#
+# See examples:
+# https://github.com/firecow/gitlab-ci-local/blob/master/examples/docker-compose-nodejs/.gitlab-ci.yml
+### @Description Build alpine
+##alpine-image:
+##  services:
+##    - docker:dind
+##  needs: []
+##  image: docker:stable
+##  stage: build
+##  script:
+##    - printenv
+##    - ls -all /certs/client
+##    - ls .
+##    - pwd
