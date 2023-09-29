@@ -54,25 +54,25 @@ There are also some quirks special to this solution like making sure the OBS is 
 
 ## What are the advantages of the solution?
 
-First and foremost, you can open any live broadcast you want, from YouTube to ZOOM and other sites, and have a stable solutin that will not fail randomly on software or website updates. 
+First and foremost, you can open any live broadcast you want, from YouTube to ZOOM and other sites, and have a stable solution that will not fail randomly on software or website updates. 
 
-Also, because it's DOCKER, you can create an image variant with all of your personal preferences (OBS settings, browser plugins that improve chat, and so on...) that you can open at any time to get the exact experience you want (can even be manual GUI actions, saved with `docker commit`).
+Also, because it's DOCKER, you can create (without any code required) an image variant with all of your personal preferences (OBS settings, browser plugins that improve chat, and so on...) that you can open at any time to get the exact experience you want (can even be manual GUI actions, saved with `docker commit`).
 
-Another advantage is the ability to run multiple DOCKER instances in the cloud and thus record multiple things at the same time. (Remember to assign each 4x vCPU... )
+An advantage we get to keep, is the ability to run multiple DOCKER instances in the cloud and thus record multiple things at the same time. (Remember to assign each 4x vCPU... )
 
-Another advantage we get to keep, despite the fact that the solution appears to be "heavy.", is cloud setup time. For example, in Hetzner, it takes less than 5 minutes, and because it is generic, it is always ready to be started for any live broadcast you come across! You'll be surprised to learn how much content you pass on because you are unable to fit it into your schedule!
+Another advantage we get to keep, despite the fact that the solution appears to be "heavy", is cloud setup time. For example, in Hetzner, it takes less than 5 minutes, and because it is generic, it is always ready to be started for any live broadcast you come across! You'll be surprised to learn how much content you pass on because you are unable to fit it into your schedule!
 
-Also, OBS supports scheduling recording (and stopping), so you can prepare everything ahead of time, go to sleep, and then return in the morning to a record hot from the oven! Viewing pleasure and good sleep are now compatible (FOMO no mo)!
+Also, OBS supports scheduling recording (and stopping), so you can prepare everything ahead of time, go to sleep, and then return in the morning to a record hot from the oven! Viewing pleasure and good sleep are now compatible (FOMO no mor)! But see youtube limitation below in that regard.
 
 ## Wait, but what about the problem of easy accessibility of the recordings?
 
 Choosing DOCKER has no effect on the situation. But now that we have OBS, we have access to a whole new world. In addition to recording locally, we can also stream the result to YouTube Live, for example, and then have easy access from mobile because multiple video quality is created by YouTube. With the added benefit of not having to pay for storage.
 
 Youtube Live has even more features:
-* You can make a hidden live broadcast ("Unlisted") to which only the link provides access... so you can share it with whoever you want. It will also help you not risk any important Youtube account you have with copyright issues.
+* You can make a hidden live broadcast ("Unlisted") to which only the link provides access... so you can share it with whoever you want. It will also help you not risk any important Youtube account you have with copyright issues (Unlike public and over shared videos).
 * Youtube Clips are also supported!
 * The live stream time is limited to 12 hours. (it is possible to stream more but the recording will be truncated at **FIRST** 12 hours, while live replay is limited to the **LATEST** 12 hours)
-* [Looking through people's comments on Quora](https://www.quora.com/Can-I-do-more-than-1-live-on-YouTube-simultaneously), it appears that you can have multiple live streams at the same time if you create a stream key for each instance.  (an example was also given of 34 at the same time).
+* [Looking through people's comments on Quora](https://www.quora.com/Can-I-do-more-than-1-live-on-YouTube-simultaneously), it appears that you can have multiple live streams at the same time under the same account if you create a stream key for each instance.  (an example was also given of 34 at the same time).
     * I was able to do it by scheduling a Live, and it opened an option to create new stream keys
 
-Of course, you can still save a recording locally or broadcast it to another provider (Twitch?) using OBS. It's your decision.
+Of course, you can still save a recording locally or broadcast it to another provider (Twitch?) using OBS. It's your choice (And I'm so happy to have it!).
