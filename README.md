@@ -4,6 +4,10 @@ Create a linux desktop in the cloud (with virtual screen and speakers) to record
 
 Based on `bandi13/docker-obs` repo.
 
+# Builds
+
+See: https://hub.docker.com/r/yonixw/obs-audio-firefox
+
 # Demo Video
 
 TODO
