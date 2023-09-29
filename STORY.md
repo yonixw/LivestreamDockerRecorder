@@ -14,7 +14,7 @@ In the narrow sense, where recordings are only video files that are stored on a 
 
 However, there are some non techinacal issues surrounding the recordings that simply make them extremely rare. Among them we find:
 * Copyright issues when using music or reacting to content
-* Mistakes made by the broadcaster, causing him to delete the recording (for example, he displayed a problematic image sent in chat)
+* Mistakes made by the broadcaster, causing the deletion of the recording (for example, he displayed a problematic image sent in chat)
 * "Exclusive" content which was provided for free only once, such as a seminar - and other types that do not grant permission for recording.
 
 In many cases, the situation ends up absurd, such as when I miss a zoom during work hours due to an unplanned meeting. After all, I might as well click on the link at the time... Why not obtain access to the recording?
@@ -54,7 +54,7 @@ There are also some quirks special to this solution like making sure the OBS is 
 
 ## What are the advantages of the solution?
 
-First and foremost, you can open any live broadcast you want. From YouTube to ZOOM and other sites.
+First and foremost, you can open any live broadcast you want, from YouTube to ZOOM and other sites, and have a stable solutin that will not fail randomly on software or website updates. 
 
 Also, because it's DOCKER, you can create an image variant with all of your personal preferences (OBS settings, browser plugins that improve chat, and so on...) that you can open at any time to get the exact experience you want (can even be manual GUI actions, saved with `docker commit`).
 
