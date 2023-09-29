@@ -35,7 +35,7 @@ This caused the solution to be built and abandoned only a week after. Not to men
 
 The second pitfall which caused the solution failure was the difficulty to access the recording's result (say it was created successfully given previous problems). I did have a simple storage solution in S3 and a simple player that can even jump to any point in the saved video, but because the recordings were of the highest quality, they sometimes weighed as much as 10GB. Which made the price of the tool rise on intensive usage... Another issue was accessing the recording from a mobile device, which was not always able to load the best quality on WIFI. 
 
-All of this prompted me to seek a more straightforward and generic solution. Even if some compromises are required.
+All of this prompted me to seek a more straightforward and generic solution that will help me get missed content, even if some compromises are required in other aspects.
 
 ## What is the proposed solution?
 
