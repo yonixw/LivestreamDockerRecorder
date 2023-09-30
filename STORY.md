@@ -71,7 +71,9 @@ Choosing DOCKER has no effect on the situation. But now that we have OBS, we hav
 Youtube Live has even more features:
 * You can make a hidden live broadcast ("Unlisted") to which only the link provides access... so you can share it with whoever you want. It will also help you not risk any important Youtube account you have with copyright issues (Unlike public and over shared videos).
 * Youtube Clips are also supported!
-* The live stream time is limited to 12 hours. (it is possible to stream more but the recording will be truncated at **FIRST** 12 hours, while live replay is limited to the **LATEST** 12 hours)
+* The live stream recorcing length is limited to 12 hours.
+    * It is possible to stream more but the recording will be truncated at **FIRST** 12 hours, while live replay is limited to the **LATEST** 12 hours
+    * Any stream with length of 24 hours or more will not save the recording (even not the first 12 hours)
 * [Looking through people's comments on Quora](https://www.quora.com/Can-I-do-more-than-1-live-on-YouTube-simultaneously), it appears that you can have multiple live streams at the same time under the same account if you create a stream key for each instance.  (an example was also given of 34 at the same time).
     * I was able to do it by scheduling a Live, and it opened an option to create new stream keys
 
