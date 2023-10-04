@@ -1,0 +1,10 @@
+global:
+    env:
+        vnc_server: server
+        vnc_password: pass
+
+run:
+    - open-firefox:
+          source: open-firefox.vdo
+          url: https://twitch.com/yonixw3
+          refreshtime: 600
