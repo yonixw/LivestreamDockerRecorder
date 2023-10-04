@@ -1,7 +1,7 @@
 To autoplay kick.com in firefox:
-1. Allow autoplay in settings
+1. Allow autoplay in browser settings
 1. install `automate-click` from https://addons.mozilla.org/en-US/firefox/addon/automate-click/
-2. Enter the extension to add rules
+2. Click & Enter the extension to add rules
 3. Add the following rules:
 ![image](https://github.com/yonixw/LivestreamDockerRecorder/assets/5826209/0f6c73a0-37a6-4f90-b827-42a14898cb0c)
 4. Click "Save"
