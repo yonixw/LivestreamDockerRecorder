@@ -10,3 +10,14 @@ for server in $servers; do
 done
 
 echo "All servers deleted."
+
+# Get a list of all volumes
+volumes=$(hcloud volume list -o noheader -o columns=name)
+
+# Loop through the volumes and delete them
+for volume in $volumes; do
+  echo "Deleting volume: $volume"
+  hcloud volume delete --confirm $volume
+done
+
+echo "All volumes deleted."
