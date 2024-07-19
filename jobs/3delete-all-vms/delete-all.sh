@@ -21,3 +21,14 @@ for volume in $volumes; do
 done
 
 echo "All volumes deleted."
+
+# Get a list of all SSH keys
+ssh_keys=$(hcloud ssh-key list -o noheader -o columns=name)
+
+# Loop through the SSH keys and delete them
+for ssh_key in $ssh_keys; do
+  echo "Deleting SSH key: $ssh_key"
+  hcloud ssh-key delete --confirm $ssh_key
+done
+
+echo "All SSH keys deleted."
